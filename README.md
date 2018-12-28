@@ -6,7 +6,7 @@ No changes are necessary in your website or app to use it. Just include the scri
 
 ## Usage
 
-Include the p2p-fetch.js script in the header of your HTML pages, URL-encoding the configuration parameters as shown below:
+Copy the files in the 'dist' folder to the root of your site and include the p2p-fetch.js script in the header of your HTML pages (URL-encoding the configuration parameters as shown below).
 
 `
 <script src="p2p-fetch.js?FETCH_PATTERN=(.png)%7C(.jpg)&TIMEOUT=5000&SERVER=gun-server.example.com"></script>
