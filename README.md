@@ -19,6 +19,13 @@ Explore the 'examples' folder for a working example.
 You'll need a running GunDB instance to use `p2p-fetch`.
 The domain of your GunDB instance should be passed in the SERVER parameter.
 
+## Is it production ready?
+
+No. It's not even ready.
+
+There is no security model in place and anyone and their mother can change the data in the P2P database.
+Don't trust `p2p-fetch` for anything other than harmless fun.
+
 ## Configuration
 
  * FETCH_PATTERN: a regular expression that will be used inside the ServiceWorker to identify which assets to catch
