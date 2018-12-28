@@ -1,0 +1,6 @@
+browserify:
+  build: ./src
+  volumes:
+    - ./src/p2p-fetch.js:/src/p2p-fetch.js
+    - ./src/p2p-fetch-sw.js:/src/p2p-fetch-sw.js
+    - ./dist:/dist

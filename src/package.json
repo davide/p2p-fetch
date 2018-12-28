@@ -1,0 +1,17 @@
+{
+  "name": "p2p-fetch",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "/"
+  },
+  "keywords": [],
+  "author": "Davide Marquês",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "engines": {
+    "node": "8.12.x"
+  }
+}
