@@ -24,9 +24,7 @@ var Gallery = { 'images' : [
 
 ]};
 
-// function for loading each image via XHR
-
-function imgLoad(imgJSON) {
+function loadImage(imgJSON) {
   // return a promise for an image loading
   return new Promise(function(resolve, reject) {
     var request = new XMLHttpRequest();
@@ -53,29 +51,27 @@ function imgLoad(imgJSON) {
   });
 }
 
-var imgSection = document.querySelector('section');
+function addImage(arrayResponse) {
+  var myImage = document.createElement('img');
+  var myFigure = document.createElement('figure');
+  var myCaption = document.createElement('caption');
+  var imageURL = window.URL.createObjectURL(arrayResponse[0]);
 
-window.onload = function() {
+  myImage.src = imageURL;
+  myImage.setAttribute('alt', arrayResponse[1].alt);
+  myCaption.innerHTML = '<strong>' + arrayResponse[1].name + '</strong>: Taken by ' + arrayResponse[1].credit;
 
-  // load each set of image, alt text, name and caption
+  document.getElementById('images').appendChild(myFigure);
+  myFigure.appendChild(myImage);
+  myFigure.appendChild(myCaption);
+}
+
+function loadImages() {
   for(var i = 0; i<=Gallery.images.length-1; i++) {
-    imgLoad(Gallery.images[i]).then(function(arrayResponse) {
-
-      var myImage = document.createElement('img');
-      var myFigure = document.createElement('figure');
-      var myCaption = document.createElement('caption');
-      var imageURL = window.URL.createObjectURL(arrayResponse[0]);
-
-      myImage.src = imageURL;
-      myImage.setAttribute('alt', arrayResponse[1].alt);
-      myCaption.innerHTML = '<strong>' + arrayResponse[1].name + '</strong>: Taken by ' + arrayResponse[1].credit;
-
-      imgSection.appendChild(myFigure);
-      myFigure.appendChild(myImage);
-      myFigure.appendChild(myCaption);
-
+    loadImage(Gallery.images[i]).then(function(arrayResponse) {
+      addImage(arrayResponse);
     }, function(Error) {
       console.log(Error);
     });
   }
-};
+}

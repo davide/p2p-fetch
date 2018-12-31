@@ -21,10 +21,12 @@ if (!self.GUN_SERVER) {
 }
 
 self.addEventListener('install', function(event) {
-  console.log('Installing ...')
   self.skipWaiting();
 });
 
+self.addEventListener('activate', event => {
+  return self.clients.claim();
+});
 
 Gun = require('gun/gun');
 require('gun/lib/store');
@@ -51,10 +53,6 @@ self.connect = new Promise(function(resolve){
     console.log('Disconnected from gun-db server!', peer);
   });
 
-});
-
-self.addEventListener('activate', event => {
-  console.log('V1 now ready to handle fetches!');
 });
 
 // https://stackoverflow.com/a/16245768

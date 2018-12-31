@@ -16,9 +16,14 @@
   <body>
     <h1>Lego Star Wars gallery</h1>
 
-    <section></section>
+    <section id="images"></section>
 
     <script src="load-images.js"></script>
     <script src="p2p-fetch.js?FETCH_PATTERN=%2Fgallery%2F.%2B.jpg&TIMEOUT=2000&DB_NAME=star-wars-gallery&SERVER=gun-server-gofcdhhtez.now.sh"></script>
+    <script type="text/javascript">
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        loadImages();
+      });
+    </script>
   </body>
 </html>
