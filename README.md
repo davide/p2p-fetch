@@ -8,11 +8,15 @@ No changes are necessary in your website or app to use it. Just include the scri
 
 Copy the files in the 'dist' folder to the root of your site and include the p2p-fetch.js script in the header of your HTML pages (URL-encoding the configuration parameters as shown below).
 
-`
+```
 <script src="p2p-fetch.js?FETCH_PATTERN=(.png)%7C(.jpg)&TIMEOUT=5000&SERVER=gun-server.example.com"></script>
-`
+```
 
 Explore the 'examples' folder for a working example.
+
+### Notes
+ * The `p2p-fetch` ServiceWorker needs to be installed and activated before it can catch requests. This means that any assets loaded before that happens will still be loaded from the web. The FORCE_RELOAD configuration can mitigate that a bit but a better approach would be to delay asset loading `p2p-fetch` notifies that it's ready to go (not supported yet).
+ * If you host the files in a sub-folder instead of the root of your site `p2p-fetch` will only be able to catch requests from that path or below.
 
 ## Runtime Dependency
 
