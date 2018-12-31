@@ -14,9 +14,9 @@ Copy the files in the 'dist' folder to the *root of your site* and include the p
 
 The `p2p-fetch` ServiceWorker needs to be installed and activate before it can catch requests, which means that any assets loaded before that happens will still be loaded from the web.
 
-To make sure you don't miss anything delay you asset loading until the `oncontrollerchange` event is triggered:
+To make sure you don't miss anything delay you asset loading until the serviceWorker is active:
 ```
-navigator.serviceWorker.addEventListener('controllerchange', function() {
+navigator.serviceWorker.ready.then(function(registration) {
   // asset loading goes here
 });
 ```
