@@ -43,3 +43,13 @@ Don't trust `p2p-fetch` for anything other than harmless fun.
 `docker-compose up`
 
 You can find the resulting files in the 'dist' folder.
+
+## Credits, Dependencies, References
+
+ * [GUN - Graph Database](https://github.com/amark/gun)
+ * [MDN web docs » Using Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers)
+ * [Google Developers » Introduction to Service Worker ](https://developers.google.com/web/ilt/pwa/introduction-to-service-worker)
+ * [Activate Service Workers Faster](https://davidwalsh.name/service-worker-claim)
+ * [WHATWG » Fetch API](https://fetch.spec.whatwg.org/)
+ * [MDN web docs » Using Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+ * [MDN web docs » Response.type](https://developer.mozilla.org/en-US/docs/Web/API/Response/type)
