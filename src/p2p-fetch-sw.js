@@ -14,6 +14,7 @@ self.GUN_SERVER = getQueryParam('GUN_SERVER', false);
 self.GUN_DB_NAME = getQueryParam('GUN_DB_NAME', 'gun-db');
 self.GUN_WAIT_TIME = parseInt( getQueryParam('GUN_WAIT_TIME', '1000') );
 self.URL_MATCH_REGEX = new RegExp( getQueryParam('URL_MATCH_REGEX', false) );
+self.FORCE_P2P = getQueryParam('FORCE_P2P', '');
 
 if (!self.GUN_SERVER) {
   console.log('Missing parameter in service worker: "gun-server"');
@@ -107,6 +108,9 @@ self.addEventListener('fetch', function(event) {
     self.connect.then(function(gun){
 
         console.log('gun.get(encodeURI("' + url + '"))')
+
+        var p2pTimeout = (self.FORCE_P2P != '') ? 9999999 : self.GUN_WAIT_TIME;
+
         // applying a user-defined timeout (see https://gun.eco/docs/API#once)
         gun.get(encodeURI(url)).once(function(dataForUrl){
           if (dataForUrl) {
@@ -164,7 +168,7 @@ self.addEventListener('fetch', function(event) {
 
           }); // fetch
 
-        }, {wait: self.GUN_WAIT_TIME}); // gun get
+        }, {wait: p2pTimeout}); // gun get
 
       }); // connect.then
 

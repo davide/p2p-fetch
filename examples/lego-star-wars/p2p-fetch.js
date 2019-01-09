@@ -4,11 +4,12 @@
     console.log('P2P FETCH: ServiceWorker not supported')
     return;
   }
-  const scriptSrc = document.currentScript.src,
+  const queryParams = window.location.search.substring(1).split('&'),
+        scriptSrc = document.currentScript.src,
         scriptUrl = new URL(scriptSrc),
-        queryParams = scriptUrl.search.substring(1).split('&');
+        scriptQueryParams = scriptUrl.search.substring(1).split('&');
 
-  function getQueryParam(key, defaultValue) {
+  function getQueryParam(queryParams, key, defaultValue) {
     for(var i in queryParams) {
       var pair = queryParams[i].split('=');
       if (decodeURIComponent(pair[0]) == key) {
@@ -18,10 +19,11 @@
     return defaultValue;
   }
    
-  const FETCH_PATTERN = getQueryParam('FETCH_PATTERN', false);
-  const SERVER = getQueryParam('SERVER', false);
-  const DB_NAME = getQueryParam('DB_NAME', 'p2p-fetch');
-  const TIMEOUT = getQueryParam('TIMEOUT', '5000');
+  const FETCH_PATTERN = getQueryParam(scriptQueryParams, 'FETCH_PATTERN', false);
+  const SERVER = getQueryParam(scriptQueryParams, 'SERVER', false);
+  const DB_NAME = getQueryParam(scriptQueryParams, 'DB_NAME', 'p2p-fetch');
+  const TIMEOUT = getQueryParam(scriptQueryParams, 'TIMEOUT', '5000');
+  const FORCE_P2P = getQueryParam(queryParams, 'FORCE_P2P', '');
 
   var missing = [];
   if (!FETCH_PATTERN) { missing.push('FETCH_PATTERN'); }
@@ -35,7 +37,8 @@
     'GUN_SERVER' : SERVER,
     'GUN_DB_NAME': DB_NAME,
     'GUN_WAIT_TIME': TIMEOUT,
-    'URL_MATCH_REGEX': FETCH_PATTERN
+    'URL_MATCH_REGEX': FETCH_PATTERN,
+    'FORCE_P2P': FORCE_P2P
   };
 
   function serialize(obj) {
