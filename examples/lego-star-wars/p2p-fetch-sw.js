@@ -3169,12 +3169,13 @@ self.addEventListener('fetch', function(event) {
                 gun.get(encodeURI(url)).put({
                   init_json: JSON.stringify(init),
                   body_data_url: bodyDataUrl
+                }, function(ack){
+                  console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
+                  var blob = dataURLToBlob(bodyDataUrl);
+                  resolve(
+                    new Response(blob, init)
+                  );
                 });
-                console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
-                var blob = dataURLToBlob(bodyDataUrl);
-                resolve(
-                  new Response(blob, init)
-                );
               };
             });
 
