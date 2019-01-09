@@ -150,19 +150,15 @@ self.addEventListener('fetch', function(event) {
               reader.readAsDataURL(blob); 
               reader.onloadend = function() {
                 var bodyDataUrl = reader.result;
-                var urlNode = gun.get(encodeURI(url)).put({
+                gun.get(encodeURI(url)).put({
                   init_json: JSON.stringify(init),
                   body_data_url: bodyDataUrl
                 });
-                gun.get(encodeURI(url)).once(function(dataForUrl){
-                  var init = JSON.parse(dataForUrl.init_json || '{}'),
-                      bodyDataUrl = dataForUrl.body_data_url;
-                  console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
-                  var blob = dataURLToBlob(bodyDataUrl);
-                  resolve(
-                    new Response(blob, init)
-                  );
-                });
+                console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
+                var blob = dataURLToBlob(bodyDataUrl);
+                resolve(
+                  new Response(blob, init)
+                );
               };
             });
 
