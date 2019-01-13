@@ -23,6 +23,7 @@
     <script type="text/javascript">
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(function(registration) {
+          console.log('Lego Star Wars: serviceWorker ready! Loading images ...');
           loadImages();
         });
       } else {
