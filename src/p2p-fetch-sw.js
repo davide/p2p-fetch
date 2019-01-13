@@ -102,12 +102,12 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
+  console.log('gun.get(encodeURI("' + url + '"))');
+
   event.respondWith(
     new Promise(function(resolve){
 
     self.connect.then(function(gun){
-
-        console.log('gun.get(encodeURI("' + url + '"))')
 
         var p2pTimeout = (self.FORCE_P2P != '') ? 9999999 : self.GUN_WAIT_TIME;
 
