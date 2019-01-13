@@ -3045,7 +3045,7 @@ require('gun/lib/rindexed');
 self.connect = function(){
   if (!self.delayedGun) {
     self.delayedGun = new Promise(function(resolve){
-      console.log('Connecting to gun-db server...')
+      console.log('Connecting to gun-db server \'', self.GUN_SERVER, '\'...')
       var gun = new Gun({
         peers: [ self.GUN_SERVER ],
         localStorage: false,
