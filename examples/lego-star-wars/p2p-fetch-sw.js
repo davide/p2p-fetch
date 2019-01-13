@@ -3058,18 +3058,13 @@ self.connect = new Promise(function(resolve){
     indexedDB: indexedDB,
     file: self.GUN_DB_NAME
   });
-  console.log('Connecting to gun-db server... setup timeout.')
-  setTimeout(function(){
-    resolve(gun);
-  }, 4000);
+  resolve(gun);
   gun.on('hi', function(peer){
     console.log('Connected to gun-db server!', peer);
-    resolve(gun)
   });
   gun.on('bye', function(peer){
     console.log('Disconnected from gun-db server!', peer);
   });
-
 });
 
 // https://stackoverflow.com/a/16245768
