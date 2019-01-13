@@ -3037,34 +3037,40 @@ if (!self.GUN_SERVER) {
   return;
 }
 
-self.addEventListener('install', function(event) {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
-  return self.clients.claim();
-});
-
 Gun = require('gun/gun');
 require('gun/lib/store');
 require('gun/lib/rindexed');
 //require('gun/lib/not');
 
-self.connect = new Promise(function(resolve){
-  console.log('Connecting to gun-db server...')
-  var gun = new Gun({
-    peers: [ self.GUN_SERVER ],
-    localStorage: false,
-    indexedDB: indexedDB,
-    file: self.GUN_DB_NAME
-  });
-  resolve(gun);
-  gun.on('hi', function(peer){
-    console.log('Connected to gun-db server!', peer);
-  });
-  gun.on('bye', function(peer){
-    console.log('Disconnected from gun-db server!', peer);
-  });
+self.connect = function(){
+  if (!self.delayedGun) {
+    self.delayedGun = new Promise(function(resolve){
+      console.log('Connecting to gun-db server...')
+      var gun = new Gun({
+        peers: [ self.GUN_SERVER ],
+        localStorage: false,
+        indexedDB: indexedDB,
+        file: self.GUN_DB_NAME
+      });
+      resolve(gun);
+      gun.on('hi', function(peer){
+        console.log('Connected to gun-db server!', peer);
+      });
+      gun.on('bye', function(peer){
+        console.log('Disconnected from gun-db server!', peer);
+      });
+    });
+  }
+  return self.delayedGun;
+};
+
+self.addEventListener('install', function(event) {
+  self.connect();
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  return self.clients.claim();
 });
 
 // https://stackoverflow.com/a/16245768
@@ -3118,7 +3124,7 @@ self.addEventListener('fetch', function(event) {
   event.respondWith(
     new Promise(function(resolve){
 
-    self.connect.then(function(gun){
+    self.connect().then(function(gun){
 
         var p2pTimeout = (self.FORCE_P2P != '') ? 9999999 : self.GUN_WAIT_TIME;
 
