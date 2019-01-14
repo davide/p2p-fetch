@@ -53,8 +53,10 @@ self.addEventListener('install', function(event) {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  return self.clients.claim();
+self.addEventListener('activate', function(event){
+  event.waitUntil(
+    self.clients.claim()
+  );
 });
 
 // https://stackoverflow.com/a/16245768

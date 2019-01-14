@@ -22,10 +22,10 @@
     <script src="p2p-fetch.js?FETCH_PATTERN=%2Fgallery%2F.%2B.jpg&TIMEOUT=30000&DB_NAME=star-wars-gallery&SERVER=https%3A%2F%2Fgun-server-gofcdhhtez.now.sh%2Fgun"></script>
     <script type="text/javascript">
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(function(registration) {
+        document.body.addEventListener('p2p-fetch-ready', function(e){
           console.log('Lego Star Wars: serviceWorker ready! Loading images ...');
           loadImages();
-        });
+        }, false);
       } else {
         console.log('Service workers are not supported.');
       }

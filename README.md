@@ -14,11 +14,11 @@ Copy the files in the 'dist' folder to the *root of your site* and include the p
 
 The `p2p-fetch` ServiceWorker needs to be installed and activate before it can catch requests, which means that any assets loaded before that happens will still be loaded from the web.
 
-To make sure you don't miss anything delay you asset loading until the serviceWorker is active:
+To make sure you don't miss anything delay your assets until you get the 'p2p-fetch-ready' event:
 ```
-navigator.serviceWorker.ready.then(function(registration) {
+document.body.addEventListener('p2p-fetch-ready', function(e){
   // asset loading goes here
-});
+}, false);
 ```
 
 Explore the 'examples' folder for a working example.
@@ -58,3 +58,6 @@ You can find the resulting files in the 'dist' folder.
  * [WHATWG » Fetch API](https://fetch.spec.whatwg.org/)
  * [MDN web docs » Using Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
  * [MDN web docs » Response.type](https://developer.mozilla.org/en-US/docs/Web/API/Response/type)
+ * [The Service Worker Lifecycle](https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle)
+ * [Stuff I wish I'd known sooner about service workers](https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9)
+ * [How to really get ALL fetch requests captured by your Service Worker](https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9#gistcomment-2737157)

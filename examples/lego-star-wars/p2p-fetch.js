@@ -65,8 +65,22 @@
       console.log('P2P FETCH: ServiceWorker active');
     }
 
+    // The code below exists to ensure that ALL requests are tracked by the Service Worker. Even with the
+    // call to clients.claim() inside the ServiceWorker activate event some requests would be skipped.
+    //  - https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9
+    //  - https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9#gistcomment-2737157
+    const promise = new Promise(resolve => {
+      if (navigator.serviceWorker.controller) return resolve();
+      navigator.serviceWorker.addEventListener('controllerchange', e => resolve());
+    });
+    promise.then(() => {
+      const event = new Event('p2p-fetch-ready');
+      document.body.dispatchEvent(event);
+    });
+
   }).catch(function(error) {
     // registration failed
     console.log('P2P FETCH: Service Workregistration failed with ' + error);
   });
+
 })();
