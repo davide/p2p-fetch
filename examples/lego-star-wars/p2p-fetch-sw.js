@@ -3117,50 +3117,6 @@ function buildP2PResponse(url, dataForUrl){
   return new Response(blob, init);
 };
 
-function fetchFromWeb(url) {
-  console.log('No data found. Off to the internets to get: ', url);
-  fetch(event.request, {mode: "cors", credentials: "same-origin"}).then(function(response){
-    var r = response.clone();
-    var init = {
-      status:     r.status,
-      statusText: r.statusText,
-      headers: {
-        "content-type": r.headers["content-type"] || r.headers["Content-Type"],
-        "content-length": r.headers["content-length"] || r.headers["Content-Length"],
-        "etag": r.headers["etag"] || r.headers["Etag"],
-        "last-modified": r.headers["last-modified"] || r.headers["Last-Modified"]
-      }
-    };
-    //r.headers.forEach(function(v,k){ init.headers[k] = v; });
-    return r.arrayBuffer().then(function(bodyArrayBuffer){
-      console.log('The internets have spoken. P2P storage, engage!');
-      var contentType = init.headers['content-type'] || init.headers['Content-Type'];
-      var blob = new Blob([bodyArrayBuffer], {type : contentType});
-      if (blob.size == 0) {
-        console.log('Crap! Can\'t reach the data to store it!');
-        return resolve(response);
-      }
-      var reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = function() {
-        var bodyDataUrl = reader.result;
-        gun.get(gunDBKey).put({
-          init_json: JSON.stringify(init),
-          body_data_url: bodyDataUrl
-        }, function(ack){
-          console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
-          var blob = dataURLToBlob(bodyDataUrl);
-          resolve(
-            new Response(blob, init)
-          );
-        });
-      };
-    });
-
-  }); // fetch
-
-}
-
 function trackTime(cb) {
   var startTime = new Date();
   return function end() {
@@ -3204,8 +3160,48 @@ self.addEventListener('fetch', function(event) {
           console.log('Current p2pTimeout: ', p2pTimeout);
 
           var noDataTimer = setTimeout(function(){
-            fetchFromWeb(url);
-          }, p2pTimeout);
+            console.log('No data found. Off to the internets to get: ', url);
+            fetch(event.request, {mode: "cors", credentials: "same-origin"}).then(function(response){
+              var r = response.clone();
+              var init = {
+                status:     r.status,
+                statusText: r.statusText,
+                headers: {
+                  "content-type": r.headers["content-type"] || r.headers["Content-Type"],
+                  "content-length": r.headers["content-length"] || r.headers["Content-Length"],
+                  "etag": r.headers["etag"] || r.headers["Etag"],
+                  "last-modified": r.headers["last-modified"] || r.headers["Last-Modified"]
+                }
+              };
+              //r.headers.forEach(function(v,k){ init.headers[k] = v; });
+              return r.arrayBuffer().then(function(bodyArrayBuffer){
+                console.log('The internets have spoken. P2P storage, engage!');
+                var contentType = init.headers['content-type'] || init.headers['Content-Type'];
+                var blob = new Blob([bodyArrayBuffer], {type : contentType});
+                if (blob.size == 0) {
+                  console.log('Crap! Can\'t reach the data to store it!');
+                  return resolve(response);
+                }
+                var reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = function() {
+                  var bodyDataUrl = reader.result;
+                  gun.get(gunDBKey).put({
+                    init_json: JSON.stringify(init),
+                    body_data_url: bodyDataUrl
+                  }, function(ack){
+                    console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
+                    var blob = dataURLToBlob(bodyDataUrl);
+                    resolve(
+                      new Response(blob, init)
+                    );
+                  });
+                };
+              });
+
+            }); // fetch
+
+          }, p2pTimeout); // setTimeout
 
           var p2pCallComplete = trackTime(function(seconds){
             console.log('P2P request for ', url, ' took ', seconds, ' seconds');
