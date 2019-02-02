@@ -19,27 +19,18 @@
     <section id="images"></section>
 
     <script src="load-images.js"></script>
+    <script src="p2p-fetch.js"></script>
     <script type="text/javascript">
-      if ('serviceWorker' in navigator) {
-
-        const FETCH_PATTERN = encodeURIComponent('.*lego-gallery-dlmgouauwv.now.sh.+.jpg'),
-              TIMEOUT = 30000,
-              DB_NAME = encodeURIComponent('star-wars-gallery'),
-              SERVER = encodeURIComponent('https://gun-server-gofcdhhtez.now.sh/gun');
-
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'p2p-fetch.js?FETCH_PATTERN=' + FETCH_PATTERN + '&TIMEOUT=' + TIMEOUT + '&DB_NAME=' + DB_NAME + '&SERVER=' + SERVER;
-        document.getElementsByTagName('head')[0].appendChild(script);
-
-        document.body.addEventListener('p2p-fetch-ready', function(e){
-          console.log('Lego Star Wars: serviceWorker ready! Loading images ...');
-          loadImages();
-        }, false);
-
-      } else {
-        console.log('Service workers are not supported.');
-      }
+      const searchParams = new URLSearchParams(window.location.search);
+      p2pFetch({
+        'FETCH_PATTERN': '.*lego-gallery-dlmgouauwv.now.sh.+.jpg',
+        'TIMEOUT': searchParams.get('TIMEOUT') || 20000,
+        'DB_NAME': 'star-wars-gallery',
+        'SERVER': 'https://gun-server-gofcdhhtez.now.sh/gun'
+      }).then(function(){
+        console.log('Lego Star Wars: p2p-fetch ready! Loading images ...');
+        loadImages();
+      });
     </script>
   </body>
 </html>

@@ -3015,57 +3015,45 @@ Gun.on('create', function(root){
 });
 },{"../gun":1,"./radisk":2,"./rfs":4}],7:[function(require,module,exports){
 
-function getQueryParam(key, defaultValue) {
-  var values = self.location.search.substring(1).split('&');
-  for(var i in values) {
-    var pair = values[i].split('=');
-    if (decodeURIComponent(pair[0]) == key) {
-      return decodeURIComponent(pair[1]) || defaultValue;
-    }
-  }
-  return defaultValue;
-}
-
-self.GUN_SERVER = getQueryParam('GUN_SERVER', false);
-self.GUN_DB_NAME = getQueryParam('GUN_DB_NAME', 'gun-db');
-self.GUN_WAIT_TIME = parseInt( getQueryParam('GUN_WAIT_TIME', '1000') );
-self.URL_MATCH_REGEX = new RegExp( getQueryParam('URL_MATCH_REGEX', false) );
-self.FORCE_P2P = getQueryParam('FORCE_P2P', '');
-
-if (!self.GUN_SERVER) {
-  console.log('Missing parameter in service worker: "gun-server"');
-  return;
-}
-
 Gun = require('gun/gun');
 require('gun/lib/store');
 require('gun/lib/rindexed');
-//require('gun/lib/not');
 
-self.connect = function(){
+self.options = { LOG_LEVEL: 0 };
+
+function debug(minLoglevel, message) {
+  if (self.options.LOG_LEVEL > minLoglevel) {
+    console.log.apply(null, message);
+  }
+}
+
+self.setup = function(reset){
+  if (reset) {
+    self.delayedGun = null;
+  }
   if (!self.delayedGun) {
     self.delayedGun = new Promise(function(resolve){
-      console.log('Connecting to gun-db server \'', self.GUN_SERVER, '\'...')
+      debug(2, ['Connecting to gun-db server \'', self.options.GUN_SERVER, '\'...']);
       var gun = new Gun({
-        peers: [ self.GUN_SERVER ],
+        peers: [ self.options.GUN_SERVER ],
         localStorage: false,
         indexedDB: indexedDB,
-        file: self.GUN_DB_NAME
+        file: self.options.GUN_DB_NAME
       });
-      resolve(gun);
       gun.on('hi', function(peer){
-        console.log('Connected to gun-db server!', peer);
+        debug(2, ['Connected to gun-db server!', peer]);
       });
       gun.on('bye', function(peer){
-        console.log('Disconnected from gun-db server!', peer);
+        debug(2, ['Disconnected from gun-db server!', peer]);
+        self.delayedGun = null;
       });
+      resolve(gun);
     });
   }
   return self.delayedGun;
 };
 
 self.addEventListener('install', function(event) {
-  self.connect();
   self.skipWaiting();
 });
 
@@ -3074,6 +3062,26 @@ self.addEventListener('activate', function(event){
     self.clients.claim()
   );
 });
+
+self.onmessage = function(event) {
+  var options = event.data;
+
+  if (!options['GUN_SERVER']) {
+    throw 'Missing parameter in service worker: "GUN_SERVER"';
+  }
+
+  self.options = {
+    GUN_SERVER: options['GUN_SERVER'] || false,
+    GUN_DB_NAME: options['GUN_DB_NAME'] || 'gun-db',
+    GUN_WAIT_TIME: parseInt( options['GUN_WAIT_TIME'] || '1000' ),
+    URL_MATCH_REGEX: new RegExp( options['URL_MATCH_REGEX'] || false ),
+    FORCE_P2P: options['FORCE_P2P'] || '',
+    LOG_LEVEL: options['LOG_LEVEL'] || 0
+  };
+  self.setup('RESET');
+
+  event.ports[0].postMessage('And... we are live!');
+}
 
 // https://stackoverflow.com/a/16245768
 function b64toBlob(b64Data, contentType, sliceSize) {
@@ -3109,10 +3117,10 @@ function dataURLToBlob(dataUrl) {
 }
 
 function buildP2PResponse(url, dataForUrl){
-  console.log('Got P2P data!')
+  debug(2, ['Got P2P data!'])
   var init = JSON.parse(dataForUrl.init_json || '{}'),
       bodyDataUrl = dataForUrl.body_data_url;
-  console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
+  debug(3, ['url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70)]);
   var blob = dataURLToBlob(bodyDataUrl);
   return new Response(blob, init);
 };
@@ -3134,17 +3142,17 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   var url = event.request.url;
-  if (url.match('/p2p-fetch(-sw)?\.js') || !url.match(self.URL_MATCH_REGEX)) {
+  if (url.match('/p2p-fetch(-sw)?\.js') || !url.match(self.options.URL_MATCH_REGEX)) {
     event.respondWith(fetch(event.request));
     return;
   }
 
-  console.log('gun.get(encodeURI("' + url + '"))');
+  debug(3, ['gun.get(encodeURI("' + url + '"))']);
 
   event.respondWith(
     new Promise(function(resolve){
 
-    self.connect().then(function(gun){
+    self.setup().then(function(gun){
 
         var gunDBKey = encodeURI(url);
 
@@ -3156,11 +3164,10 @@ self.addEventListener('fetch', function(event) {
           }
 
           // asynchronous get with a user-defined timeout (see https://gun.eco/docs/API#once)
-          var p2pTimeout = (self.FORCE_P2P != '') ? 9999999 : self.GUN_WAIT_TIME;
-          console.log('Current p2pTimeout: ', p2pTimeout);
+          var p2pTimeout = (self.options.FORCE_P2P != '') ? 9999999 : self.options.GUN_WAIT_TIME;
 
           var noDataTimer = setTimeout(function(){
-            console.log('No data found. Off to the internets to get: ', url);
+            debug(1, ['No data found. Off to the internets to get: ', url]);
             fetch(event.request, {mode: "cors", credentials: "same-origin"}).then(function(response){
               var r = response.clone();
               var init = {
@@ -3175,11 +3182,11 @@ self.addEventListener('fetch', function(event) {
               };
               //r.headers.forEach(function(v,k){ init.headers[k] = v; });
               return r.arrayBuffer().then(function(bodyArrayBuffer){
-                console.log('The internets have spoken. P2P storage, engage!');
+                debug(1, ['The internets have spoken. P2P storage, engage!']);
                 var contentType = init.headers['content-type'] || init.headers['Content-Type'];
                 var blob = new Blob([bodyArrayBuffer], {type : contentType});
                 if (blob.size == 0) {
-                  console.log('Crap! Can\'t reach the data to store it!');
+                  debug(1, ['Crap! Can\'t reach the data to store it!']);
                   return resolve(response);
                 }
                 var reader = new FileReader();
@@ -3190,7 +3197,7 @@ self.addEventListener('fetch', function(event) {
                     init_json: JSON.stringify(init),
                     body_data_url: bodyDataUrl
                   }, function(ack){
-                    console.log('url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70));
+                    debug(3, ['url: ', url, ', init: ', init, ', body: ', bodyDataUrl.substring(0, 70)]);
                     var blob = dataURLToBlob(bodyDataUrl);
                     resolve(
                       new Response(blob, init)
@@ -3204,10 +3211,10 @@ self.addEventListener('fetch', function(event) {
           }, p2pTimeout); // setTimeout
 
           var p2pCallComplete = trackTime(function(seconds){
-            console.log('P2P request for ', url, ' took ', seconds, ' seconds');
+            debug(1, ['P2P request for ', url, ' took ', seconds, ' seconds']);
           });
           gun.get(gunDBKey, function(ack){
-            console.log('gun.get callback triggered with ack: ', ack);
+            debug(4, ['gun.get callback triggered with ack: ', ack]);
             var dataForUrl = ack.put;
             if (dataForUrl) {
               clearTimeout(noDataTimer);
@@ -3218,7 +3225,7 @@ self.addEventListener('fetch', function(event) {
 
         }); // gun synchronous get
 
-      }); // connect.then
+      }); // setup.then
 
 
     }) // Promise
