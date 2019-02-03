@@ -31,7 +31,7 @@ window.p2pFetch = (function(){
     });
   }
 
-  var p2pFetchPromise = new Promise(function(resolve, reject){
+  var workerReady = new Promise(function(workerResolve, workerReject){
     navigator.serviceWorker.register(serviceWorkerUrl, { scope: path }).then(function(reg) {
 
       if (LOG_LEVEL > 1) {
@@ -49,16 +49,16 @@ window.p2pFetch = (function(){
       // call to clients.claim() inside the ServiceWorker activate event some requests would be skipped.
       //  - https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9
       //  - https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9#gistcomment-2737157
-      const promise = new Promise(resolve => {
-        if (navigator.serviceWorker.controller) return resolve();
-        navigator.serviceWorker.addEventListener('controllerchange', e => resolve());
+      const controllerReady = new Promise(controllerResolve => {
+        if (navigator.serviceWorker.controller) return controllerResolve();
+        navigator.serviceWorker.addEventListener('controllerchange', e => controllerResolve());
       });
-      promise.then(() => {
-        resolve();
+      controllerReady.then(() => {
+        workerResolve();
       });
 
     }).catch(function(error) {
-      reject('P2P FETCH: Service Worker registration failed with ' + error);
+      workerReject('P2P FETCH: Service Worker registration failed with ' + error);
     });
   });
 
@@ -81,7 +81,7 @@ window.p2pFetch = (function(){
       'LOG_LEVEL': LOG_LEVEL
     };
 
-    return p2pFetchPromise.then(function(){
+    return workerReady.then(function(){
       return configServiceWorker(config);
     });
   }
