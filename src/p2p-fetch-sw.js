@@ -126,7 +126,9 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   var url = event.request.url;
-  if (url.match('/p2p-fetch(-sw)?\.js') || !url.match(self.options.URL_MATCH_REGEX)) {
+  if (url.match('/p2p-fetch(-sw)?\.js') ||
+      !self.options.URL_MATCH_REGEX     ||
+      !url.match(self.options.URL_MATCH_REGEX)) {
     event.respondWith(fetch(event.request));
     return;
   }
